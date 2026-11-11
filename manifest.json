@@ -1,0 +1,30 @@
+{
+  "name": "购物价格记录",
+  "short_name": "购物价格",
+  "description": "记录各购物平台商品价格，比价、追踪降价，降价自动变色提醒。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#f1f6f3",
+  "theme_color": "#f7fbf8",
+  "categories": ["shopping", "utilities", "productivity"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

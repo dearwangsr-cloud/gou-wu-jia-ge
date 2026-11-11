@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#f7fbf8">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="./icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="购物价格">
+<meta name="format-detection" content="telephone=no">
+<title>购物价格记录</title>
+<style>
+  :root{
+    --bg:#eef3f0;
+    --card:#ffffff;
+    --text:#16211b;
+    --text-2:#6b7a72;
+    --line:#e3e8e5;
+    --primary:#2f9e63;
+    --radius:16px;
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none !important}
+  html{
+    -webkit-text-size-adjust:100%;
+    background:
+      radial-gradient(880px 520px at 6% -8%, #d5eddf 0%, rgba(213,237,223,0) 62%),
+      radial-gradient(720px 440px at 102% 2%, #e2eef3 0%, rgba(226,238,243,0) 58%),
+      radial-gradient(900px 620px at 50% 106%, #e6f2ea 0%, rgba(230,242,234,0) 60%),
+      linear-gradient(180deg, #f8fbf9 0%, #f1f6f3 50%, #e9efeb 100%);
+  }
+  html,body{margin:0;padding:0}
+  body{
+    background:transparent;color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    -webkit-user-select:none;user-select:none;
+  }
+  input,textarea{-webkit-user-select:auto;user-select:auto}
+
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:rgba(247,251,248,.76);
+    -webkit-backdrop-filter:saturate(180%) blur(18px);
+    backdrop-filter:saturate(180%) blur(18px);
+    border-bottom:1px solid rgba(16,40,28,.055);
+    padding-top:var(--safe-top);
+  }
+  .topbar-row{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 2px}
+  .app-title{font-size:20px;font-weight:700;margin:0;letter-spacing:-.4px}
+  .icon-btn{
+    height:32px;padding:0 12px;border-radius:10px;border:1px solid var(--line);
+    background:#fff;color:var(--text);font-size:13px;font-weight:600;font-family:inherit;
+    transition:transform .12s;
+  }
+  .icon-btn:active{transform:scale(.94)}
+
+  .tabs{
+    display:flex;gap:8px;overflow-x:auto;padding:8px 16px 12px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    flex:0 0 auto;border:1px solid rgba(16,40,28,.07);background:rgba(255,255,255,.82);color:var(--text-2);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:500;
+    font-family:inherit;white-space:nowrap;transition:.18s;
+  }
+  .tab.active{background:var(--text);color:#fff;border-color:var(--text)}
+  .tab-add{color:var(--primary);border-style:dashed}
+
+  .content{padding:14px 16px calc(110px + var(--safe-bottom))}
+  .item-card{
+    background:var(--card-bg,#fff);
+    border-radius:var(--radius);
+    padding:13px 14px;
+    margin-bottom:10px;
+    border:1px solid rgba(16,40,28,.055);
+    box-shadow:0 2px 10px rgba(16,40,28,.045), 0 1px 2px rgba(16,40,28,.025);
+    cursor:pointer;
+    transition:transform .12s ease,box-shadow .12s ease,background-color .35s ease;
+  }
+  .item-card:active{transform:scale(.982);box-shadow:0 0 0 rgba(0,0,0,0)}
+  .item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .item-name{
+    font-size:15.5px;font-weight:600;line-height:1.35;word-break:break-word;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .item-price{
+    font-size:17px;font-weight:700;letter-spacing:-.4px;white-space:nowrap;
+    font-variant-numeric:tabular-nums;flex:0 0 auto;
+  }
+  .item-price.muted{font-size:13px;font-weight:500;color:var(--text-2);padding-top:3px}
+  .item-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+  .item-tags{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+  .item-count{font-size:11.5px;color:var(--text-2);white-space:nowrap;flex:0 0 auto}
+
+  .tag{
+    display:inline-flex;align-items:center;font-size:11.5px;font-weight:500;
+    padding:2.5px 7px;border-radius:6px;border:1px solid transparent;
+    line-height:1.4;white-space:nowrap;
+  }
+  .tag-cat{background:rgba(16,40,28,.055);color:var(--text-2)}
+  .tag-drop{background:#1f8a52;color:#fff;border-color:#1f8a52;font-weight:600}
+  .tag-save{background:#eaf7ef;color:#1f7a49;border-color:#cfead9;font-weight:600}
+
+  .empty{text-align:center;padding:72px 20px;color:var(--text-2)}
+  .empty-icon{
+    width:76px;height:76px;margin:0 auto 16px;font-size:36px;
+    display:grid;place-items:center;border-radius:24px;
+    background:linear-gradient(158deg,#eaf8f0,#d9efe2);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 8px 20px rgba(47,158,99,.10);
+    opacity:1;
+  }
+  .empty-title{font-size:15px;font-weight:600;color:var(--text);margin:0 0 6px}
+  .empty-sub{font-size:13px;margin:0}
+
+  .fab{
+    position:fixed;right:18px;bottom:calc(20px + var(--safe-bottom));
+    width:56px;height:56px;border-radius:50%;border:none;
+    background:var(--primary);color:#fff;
+    font-size:30px;font-weight:300;line-height:1;
+    display:grid;place-items:center;padding-bottom:3px;
+    box-shadow:0 8px 22px rgba(47,158,99,.32), 0 2px 6px rgba(47,158,99,.20);
+    z-index:30;transition:transform .15s;
+    font-family:inherit;
+  }
+  .fab:active{transform:scale(.92)}
+
+  .overlay{
+    position:fixed;inset:0;background:rgba(10,24,17,.38);
+    opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;
+  }
+  .overlay.open{opacity:1;pointer-events:auto}
+
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;
+    background:#fff;border-radius:22px 22px 0 0;
+    max-height:min(88vh,760px);
+    display:flex;flex-direction:column;
+    transform:translateY(105%);
+    transition:transform .3s cubic-bezier(.32,.72,0,1);
+    box-shadow:0 -8px 30px rgba(10,24,17,.14);
+  }
+  .sheet.open{transform:translateY(0)}
+  .sheet-grip{
+    width:38px;height:4.5px;border-radius:99px;background:#dde3df;
+    margin:9px auto 0;flex:0 0 auto;
+  }
+  .sheet-content{
+    overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    padding:14px 18px calc(26px + var(--safe-bottom));
+  }
+  .sheet-title{font-size:17px;font-weight:700;margin:2px 0 16px;letter-spacing:-.2px}
+
+  .field{display:block;margin-bottom:14px}
+  .field-label{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:6px}
+  input[type=text],input[type=url],input[type=number],input[type=date],select,textarea{
+    width:100%;min-width:0;height:44px;padding:0 12px;
+    border-radius:11px;border:1px solid var(--line);
+    background:#f6f8f7;font-size:15px;font-family:inherit;color:var(--text);
+    -webkit-appearance:none;appearance:none;
+    transition:border-color .15s,background .15s;
+  }
+  textarea{height:auto;min-height:64px;padding:10px 12px;line-height:1.5;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);background:#fff}
+  select{
+    padding-right:34px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%236b7a72' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;background-size:12px;
+  }
+  .form-row{display:flex;gap:8px}
+  .form-row > *{flex:1;min-width:0}
+  .form-actions{display:flex;gap:10px;margin-top:20px}
+  .btn-primary{
+    flex:1;height:46px;border-radius:12px;border:none;
+    background:var(--primary);color:#fff;font-size:15px;font-weight:600;
+    font-family:inherit;transition:opacity .15s;
+  }
+  .btn-primary:active{opacity:.82}
+  .btn-ghost{
+    flex:1;height:46px;border-radius:12px;border:1px solid var(--line);
+    background:#fff;color:var(--text);font-size:15px;font-weight:500;font-family:inherit;
+  }
+  .btn-danger{
+    width:100%;height:46px;border-radius:12px;border:1px solid #f1cac7;
+    background:#fff6f5;color:#d0342c;font-size:15px;font-weight:600;font-family:inherit;
+  }
+  .mini-btn{
+    font-size:12px;color:var(--text-2);background:transparent;
+    border:1px solid var(--line);padding:5px 11px;border-radius:8px;
+    font-family:inherit;flex:0 0 auto;
+  }
+  .mini-btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
+  .mini-btn.danger{color:#d0342c;border-color:#f1cac7}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    padding:8px 14px;border-radius:10px;border:1px solid var(--line);
+    background:#f6f8f7;font-size:13.5px;color:var(--text-2);font-weight:500;
+    font-family:inherit;transition:.15s;
+  }
+  .chip.active{background:var(--primary);border-color:var(--primary);color:#fff}
+  #customPlatformWrap{margin-top:8px}
+
+  .detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .detail-title{font-size:19px;font-weight:700;margin:0 0 8px;line-height:1.3;letter-spacing:-.3px;word-break:break-word}
+  .link-btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    height:44px;border-radius:12px;background:rgba(16,40,28,.05);
+    color:var(--text);text-decoration:none;font-size:14px;font-weight:600;
+    margin-bottom:14px;
+  }
+  .link-static{
+    display:flex;align-items:flex-start;gap:6px;
+    min-height:44px;padding:10px 12px;margin-bottom:14px;
+    border-radius:12px;background:rgba(16,40,28,.05);
+    color:var(--text);font-size:13px;font-weight:500;line-height:1.45;
+    word-break:break-all;text-align:left;
+    border:none;width:100%;font-family:inherit;
+  }
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 12px}
+  .stat{background:rgba(16,40,28,.04);border-radius:12px;padding:11px 6px;text-align:center}
+  .stat-label{font-size:11px;color:var(--text-2);margin-bottom:3px}
+  .stat-val{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+  .drop-banner{
+    background:#eaf7ef;border:1px solid #cfead9;color:#1f7a49;
+    border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;text-align:center;
+  }
+  .note-box{
+    margin-top:12px;padding:10px 12px;border-radius:10px;
+    background:rgba(16,40,28,.04);color:var(--text-2);font-size:13px;line-height:1.5;
+    white-space:pre-wrap;word-break:break-word;
+  }
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin:22px 0 6px}
+  .section-head h3{font-size:14px;font-weight:700;margin:0}
+  .price-list{list-style:none;margin:0;padding:0}
+  .price-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:11px 0;border-bottom:1px solid var(--line);
+  }
+  .price-row-main{min-width:0}
+  .price-val{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+  .price-row.latest .price-val{color:var(--primary)}
+  .price-date{font-size:12px;color:var(--text-2);margin-left:8px}
+  .price-empty{color:var(--text-2);font-size:13px;padding:14px 0;list-style:none}
+  .price-form{background:rgba(16,40,28,.035);border-radius:12px;padding:12px;margin-bottom:10px}
+  .price-form input{margin-bottom:8px}
+  .price-form .form-actions{margin-top:2px}
+  .price-form .form-actions button{height:40px;font-size:14px}
+  .detail-footer{margin-top:26px}
+
+  .cat-row{display:flex;gap:8px;align-items:center;margin-bottom:9px}
+  .cat-row .cat-input{flex:1;min-width:0}
+  .cat-add-form{display:flex;gap:8px;margin-top:18px}
+  .cat-add-form input{flex:1;min-width:0}
+  .cat-add-form button{flex:0 0 auto;width:auto;padding:0 22px;height:44px;border-radius:11px}
+  .muted{color:var(--text-2);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-row">
+    <h1 class="app-title">购物价格</h1>
+    <button class="icon-btn" id="btnCats">分区</button>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<main class="content" id="content"></main>
+
+<button class="fab" id="fabAdd" aria-label="添加商品">+</button>
+
+<div class="overlay" id="overlay"></div>
+
+<section class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-grip"></div>
+  <div class="sheet-content" id="sheetContent"></div>
+</section>
+
+<script>
+(function () {
+  'use strict';
+
+  const STORE_KEY = 'shopping-price-tracker-v1';
+  const PRESET_PLATFORMS = ['淘宝', '京东', '拼多多', '抖音'];
+  const PLATFORM_COLORS = {
+    '淘宝': '#ff6a00',
+    '京东': '#e1251b',
+    '拼多多': '#e02e24',
+    '抖音': '#161823'
+  };
+  const DROP_COLORS = ['#ffffff', '#eff9f2', '#d9f2e2', '#b5e7c9', '#8ad8ab', '#5cc78a'];
+
+  let _seq = 0;
+  function uid(p) {
+    _seq++;
+    return p + '_' + Date.now().toString(36) + _seq.toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmt(n) {
+    const num = Number(n);
+    if (!isFinite(num)) return '0';
+    if (Number.isInteger(num)) return String(num);
+    return num.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  }
+  function todayStr() {
+    const d = new Date();
+    const p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+  function normalizeUrl(u) {
+    u = String(u || '').trim();
+    if (!u) return '';
+    if (/^https?:\/\//i.test(u)) return u;
+    if (/^[\w-]+(\.[\w-]+)+(\/.*)?$/.test(u)) return 'https://' + u;
+    return '';
+  }
+  function platformStyle(name) {
+    const c = PLATFORM_COLORS[name] || '#6b7a72';
+    return 'color:' + c + ';border-color:' + c + '2e;background:' + c + '10;';
+  }
+  function dropLevel(drop) {
+    if (drop <= 0.005) return 0;
+    if (drop <= 0.05) return 1;
+    if (drop <= 0.12) return 2;
+    if (drop <= 0.22) return 3;
+    if (drop <= 0.35) return 4;
+    return 5;
+  }
+
+  let _toastTimer = null;
+  function toast(msg) {
+    let el = document.getElementById('toastEl');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'toastEl';
+      el.style.cssText = 'position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(6px);background:rgba(22,33,27,.92);color:#fff;font-size:13px;font-weight:500;padding:8px 16px;border-radius:10px;z-index:200;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    requestAnimationFrame(function () {
+      el.style.opacity = '1';
+      el.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function () {
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(-50%) translateY(6px)';
+    }, 1600);
+  }
+  function copyText(text) {
+    function fallback() {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast('已复制'); }, function () { fallback(); toast('已复制'); });
+    } else {
+      fallback();
+      toast('已复制');
+    }
+  }
+
+  let state = null;
+  const ui = { activeCat: 'all', viewingItem: null, editingItem: null };
+
+  function defaultCategories() {
+    return ['日用品', '饮食', '服饰'].map(function (n) {
+      return { id: uid('c'), name: n, createdAt: Date.now() };
+    });
+  }
+
+  function normalizeData(d) {
+    if (!d || typeof d !== 'object') d = {};
+    d.categories = Array.isArray(d.categories) ? d.categories : [];
+    d.items = Array.isArray(d.items) ? d.items : [];
+    d.categories.forEach(function (c) {
+      if (!c.id) c.id = uid('c');
+      c.name = String(c.name || '未命名');
+    });
+    d.items.forEach(function (it) {
+      if (!it.id) it.id = uid('i');
+      if (!Array.isArray(it.prices)) it.prices = [];
+      it.prices.forEach(function (p) {
+        if (!p.id) p.id = uid('p');
+        p.price = Number(p.price) || 0;
+        if (!p.date) p.date = todayStr();
+        if (typeof p.ts !== 'number') p.ts = Date.now();
+      });
+      if (!it.platform) it.platform = '其他';
+      if (!it.updatedAt) it.updatedAt = it.createdAt || Date.now();
+    });
+    return d;
+  }
+
+  function load() {
+    let data = null;
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) data = JSON.parse(raw);
+    } catch (e) { data = null; }
+    if (!data || !Array.isArray(data.categories) || !data.categories.length) {
+      if (!data || !Array.isArray(data.items)) {
+        data = { categories: defaultCategories(), items: [] };
+        saveData(data);
+      }
+    }
+    return normalizeData(data);
+  }
+  function saveData(d) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(d)); } catch (e) {}
+  }
+  function save() { saveData(state); }
+
+  function getStats(item) {
+    if (!item.prices || !item.prices.length) return null;
+    const sorted = item.prices.slice().sort(function (a, b) {
+      const d = String(a.date).localeCompare(String(b.date));
+      if (d !== 0) return d;
+      return (a.ts || 0) - (b.ts || 0);
+    });
+    const latest = sorted[sorted.length - 1];
+    let max = -Infinity, min = Infinity;
+    sorted.forEach(function (p) {
+      if (p.price > max) max = p.price;
+      if (p.price < min) min = p.price;
+    });
+    const drop = max > 0 ? (max - latest.price) / max : 0;
+    return { sorted: sorted, latest: latest, max: max, min: min, drop: drop, count: sorted.length };
+  }
+
+  const els = {
+    tabs: document.getElementById('tabs'),
+    content: document.getElementById('content'),
+    overlay: document.getElementById('overlay'),
+    sheet: document.getElementById('sheet'),
+    sheetContent: document.getElementById('sheetContent'),
+    fab: document.getElementById('fabAdd'),
+    btnCats: document.getElementById('btnCats')
+  };
+
+  function render() {
+    renderTabs();
+    renderContent();
+  }
+
+  function renderTabs() {
+    const sl = els.tabs.scrollLeft;
+    let html = '<button class="tab ' + (ui.activeCat === 'all' ? 'active' : '') + '" data-cat="all">全部</button>';
+    html += state.categories.map(function (c) {
+      return '<button class="tab ' + (ui.activeCat === c.id ? 'active' : '') + '" data-cat="' + c.id + '">' + esc(c.name) + '</button>';
+    }).join('');
+    html += '<button class="tab tab-add" data-act="manage-cat">＋ 分区</button>';
+    els.tabs.innerHTML = html;
+    els.tabs.scrollLeft = sl;
+  }
+
+  function renderContent() {
+    let items = state.items;
+    if (ui.activeCat !== 'all') {
+      items = items.filter(function (i) { return i.categoryId === ui.activeCat; });
+    }
+
+    if (!items.length) {
+      const hasAny = state.items.length > 0;
+      els.content.innerHTML =
+        '<div class="empty">' +
+          '<div class="empty-icon">🛍️</div>' +
+          '<p class="empty-title">' + (hasAny ? '这个分区还没有商品' : '还没有记录任何商品') + '</p>' +
+          '<p class="empty-sub">点击右下角 + 添加第一个商品</p>' +
+        '</div>';
+      return;
+    }
+
+    items = items.slice().sort(function (a, b) {
+      return (b.updatedAt || 0) - (a.updatedAt || 0);
+    });
+    els.content.innerHTML = items.map(renderCard).join('');
+  }
+
+  function renderCard(item) {
+    const stats = getStats(item);
+    const cat = state.categories.find(function (c) { return c.id === item.categoryId; });
+    const bg = DROP_COLORS[dropLevel(stats ? stats.drop : 0)];
+
+    const priceHtml = stats ? '¥' + fmt(stats.latest.price) : '未记录价格';
+    const dropTag = (stats && stats.drop > 0.005)
+      ? '<span class="tag tag-drop">↓ ' + Math.round(stats.drop * 100) + '%</span>' +
+        '<span class="tag tag-save">省 ¥' + fmt(stats.max - stats.latest.price) + '</span>'
+      : '';
+
+    return '' +
+      '<article class="item-card" data-id="' + item.id + '" style="--card-bg:' + bg + '">' +
+        '<div class="item-head">' +
+          '<div class="item-name">' + esc(item.name) + '</div>' +
+          '<div class="item-price' + (stats ? '' : ' muted') + '">' + priceHtml + '</div>' +
+        '</div>' +
+        '<div class="item-foot">' +
+          '<div class="item-tags">' +
+            '<span class="tag" style="' + platformStyle(item.platform) + '">' + esc(item.platform) + '</span>' +
+            (cat ? '<span class="tag tag-cat">' + esc(cat.name) + '</span>' : '') +
+            dropTag +
+          '</div>' +
+          '<div class="item-count">' + (stats ? stats.count + ' 次记录' : '暂无记录') + '</div>' +
+        '</div>' +
+      '</article>';
+  }
+
+  function openSheet(html) {
+    els.sheetContent.innerHTML = html;
+    els.sheetContent.scrollTop = 0;
+    els.overlay.classList.add('open');
+    els.sheet.classList.add('open');
+    els.sheet.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSheet() {
+    els.overlay.classList.remove('open');
+    els.sheet.classList.remove('open');
+    els.sheet.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    ui.viewingItem = null;
+    ui.editingItem = null;
+  }
+
+  function dropText(stats) {
+    if (!stats) return '还没有价格记录，添加一条开始比价';
+    if (stats.drop <= 0.005) return '当前价格与历史最高价持平';
+    return '较历史最高价下降 ' + Math.round(stats.drop * 100) + '%（省 ¥' + fmt(stats.max - stats.latest.price) + '）';
+  }
+
+  function openDetail(itemId) {
+    const item = state.items.find(function (i) { return i.id === itemId; });
+    if (!item) { closeSheet(); return; }
+
+    ui.viewingItem = itemId;
+    ui.editingItem = null;
+
+    const stats = getStats(item);
+    const cat = state.categories.find(function (c) { return c.id === item.categoryId; });
+    const bg = DROP_COLORS[dropLevel(stats ? stats.drop : 0)];
+
+    const rawLink = String(item.link || '').trim();
+    const href = normalizeUrl(rawLink);
+
+    let priceRows = '';
+    if (stats) {
+      const desc = stats.sorted.slice().reverse();
+      priceRows = desc.map(function (p, idx) {
+        return '<li class="price-row' + (idx === 0 ? ' latest' : '') + '">' +
+          '<div class="price-row-main">' +
+            '<span class="price-val">¥' + fmt(p.price) + '</span>' +
+            '<span class="price-date">' + esc(p.date) + (p.note ? ' · ' + esc(p.note) : '') + '</span>' +
+          '</div>' +
+          '<button class="mini-btn danger" data-act="del-price" data-pid="' + p.id + '">删除</button>' +
+        '</li>';
+      }).join('');
+    } else {
+      priceRows = '<li class="price-empty">还没有价格记录</li>';
+    }
+
+    const statBlock = stats
+      ? '<div class="stat-grid">' +
+          '<div class="stat"><div class="stat-label">当前价</div><div class="stat-val">¥' + fmt(stats.latest.price) + '</div></div>' +
+          '<div class="stat"><div class="stat-label">历史最高</div><div class="stat-val">¥' + fmt(stats.max) + '</div></div>' +
+          '<div class="stat"><div class="stat-label">历史最低</div><div class="stat-val">¥' + fmt(stats.min) + '</div></div>' +
+        '</div>'
+      : '';
+
+    const html =
+      '<div class="detail" style="--head-bg:' + bg + '">' +
+        '<div class="detail-head">' +
+          '<div>' +
+            '<h2 class="detail-title">' + esc(item.name) + '</h2>' +
+            '<div class="item-tags">' +
+              '<span class="tag" style="' + platformStyle(item.platform) + '">' + esc(item.platform) + '</span>' +
+              (cat ? '<span class="tag tag-cat">' + esc(cat.name) + '</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<button class="icon-btn" data-act="edit-item">编辑</button>' +
+        '</div>' +
+
+        (href
+          ? '<a class="link-btn" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer">🔗 打开商品链接</a>'
+          : (rawLink
+              ? '<button type="button" class="link-static" data-act="copy-link">📋 点击复制：' + esc(rawLink) + '</button>'
+              : '')) +
+
+        statBlock +
+        '<div class="drop-banner">' + dropText(stats) + '</div>' +
+
+        (item.note ? '<div class="note-box">' + esc(item.note) + '</div>' : '') +
+
+        '<div class="section-head">' +
+          '<h3>价格记录</h3>' +
+          '<button class="mini-btn primary" data-act="toggle-price-form">＋ 添加</button>' +
+        '</div>' +
+
+        '<form class="price-form" id="priceForm" hidden>' +
+          '<div class="form-row">' +
+            '<input type="number" name="price" step="0.01" min="0" inputmode="decimal" placeholder="价格" required>' +
+            '<input type="date" name="date" value="' + todayStr() + '" required>' +
+          '</div>' +
+          '<input type="text" name="note" placeholder="备注（可选，如：双 11 预热价）" maxlength="40">' +
+          '<div class="form-actions">' +
+            '<button type="button" class="btn-ghost" data-act="close-price-form">取消</button>' +
+            '<button type="submit" class="btn-primary">保存</button>' +
+          '</div>' +
+        '</form>' +
+
+        '<ul class="price-list">' + priceRows + '</ul>' +
+
+        '<div class="detail-footer">' +
+          '<button class="btn-danger" data-act="del-item">删除商品</button>' +
+        '</div>' +
+      '</div>';
+
+    openSheet(html);
+  }
+
+  function openItemForm(itemId) {
+    const isEdit = !!itemId;
+    const item = isEdit ? state.items.find(function (i) { return i.id === itemId; }) : null;
+    if (isEdit && !item) return;
+
+    ui.editingItem = isEdit ? itemId : null;
+
+    const cats = state.categories;
+    const defaultCatId = (ui.activeCat !== 'all' ? ui.activeCat : (cats[0] ? cats[0].id : ''));
+
+    let platform = item ? item.platform : PRESET_PLATFORMS[0];
+    let isCustom = PRESET_PLATFORMS.indexOf(platform) === -1;
+
+    const chipsHtml = PRESET_PLATFORMS.map(function (p) {
+      const on = (!isCustom && platform === p);
+      return '<button type="button" class="chip' + (on ? ' active' : '') + '" data-act="pick-platform" data-p="' + p + '">' + p + '</button>';
+    }).join('') +
+    '<button type="button" class="chip' + (isCustom ? ' active' : '') + '" data-act="pick-platform" data-p="__custom">其他</button>';
+
+    const catOptions = cats.map(function (c) {
+      const sel = (item ? item.categoryId : defaultCatId) === c.id ? ' selected' : '';
+      return '<option value="' + c.id + '"' + sel + '>' + esc(c.name) + '</option>';
+    }).join('');
+
+    const html =
+      '<h2 class="sheet-title">' + (isEdit ? '编辑商品' : '添加商品') + '</h2>' +
+      '<form id="itemForm">' +
+
+        '<label class="field">' +
+          '<span class="field-label">商品名称</span>' +
+          '<input type="text" name="name" required maxlength="60" placeholder="例如：小米空气净化器滤芯" value="' + esc(item ? item.name : '') + '">' +
+        '</label>' +
+
+        '<label class="field">' +
+          '<span class="field-label">所属分区</span>' +
+          '<select name="categoryId">' + catOptions + '</select>' +
+        '</label>' +
+
+        '<div class="field">' +
+          '<span class="field-label">购物平台</span>' +
+          '<div class="chips" id="platformChips">' + chipsHtml + '</div>' +
+          '<div id="customPlatformWrap"' + (isCustom ? '' : ' hidden') + '>' +
+            '<input type="text" id="customPlatform" maxlength="12" placeholder="输入平台名称" value="' + (isCustom ? esc(platform) : '') + '">' +
+          '</div>' +
+        '</div>' +
+
+        '<label class="field">' +
+          '<span class="field-label">商品链接（可选）</span>' +
+          '<input type="text" name="link" placeholder="网址、口令或任意文本均可" value="' + esc(item ? (item.link || '') : '') + '">' +
+        '</label>' +
+
+        '<label class="field">' +
+          '<span class="field-label">备注（可选）</span>' +
+          '<textarea name="note" rows="2" maxlength="200" placeholder="尺码、颜色、型号等">' + esc(item ? (item.note || '') : '') + '</textarea>' +
+        '</label>' +
+
+        (isEdit ? '' :
+        '<div class="field">' +
+          '<span class="field-label">初始价格（可选）</span>' +
+          '<div class="form-row">' +
+            '<input type="number" name="price" step="0.01" min="0" inputmode="decimal" placeholder="0.00">' +
+            '<input type="date" name="date" value="' + todayStr() + '">' +
+          '</div>' +
+        '</div>') +
+
+        '<div class="form-actions">' +
+          '<button type="button" class="btn-ghost" data-act="cancel-item-form">取消</button>' +
+          '<button type="submit" class="btn-primary">' + (isEdit ? '保存修改' : '添加商品') + '</button>' +
+        '</div>' +
+      '</form>';
+
+    openSheet(html);
+  }
+
+  function openCatManage() {
+    const rows = state.categories.map(function (c) {
+      const n = state.items.filter(function (i) { return i.categoryId === c.id; }).length;
+      return '<div class="cat-row" data-id="' + c.id + '">' +
+        '<input class="cat-input" type="text" value="' + esc(c.name) + '" maxlength="20">' +
+        '<span class="muted" style="flex:0 0 auto;font-size:12px">' + n + ' 件</span>' +
+        '<button class="mini-btn danger" data-act="del-cat" data-id="' + c.id + '">删除</button>' +
+      '</div>';
+    }).join('') || '<p class="muted">还没有分区，先添加一个吧</p>';
+
+    const html =
+      '<h2 class="sheet-title">管理分区</h2>' +
+      '<p class="muted" style="margin:-10px 0 14px;font-size:12.5px">修改名称后点击空白处即可保存</p>' +
+      '<div class="cat-list">' + rows + '</div>' +
+      '<form class="cat-add-form" id="catForm">' +
+        '<input type="text" name="name" maxlength="20" placeholder="新分区名称，如：数码" required>' +
+        '<button type="submit" class="btn-primary">添加</button>' +
+      '</form>';
+
+    openSheet(html);
+  }
+
+  els.tabs.addEventListener('click', function (e) {
+    const tab = e.target.closest('[data-cat]');
+    if (tab) {
+      ui.activeCat = tab.dataset.cat;
+      render();
+      window.scrollTo({ top: 0 });
+      return;
+    }
+    const add = e.target.closest('[data-act="manage-cat"]');
+    if (add) openCatManage();
+  });
+
+  els.content.addEventListener('click', function (e) {
+    const card = e.target.closest('.item-card');
+    if (card) openDetail(card.dataset.id);
+  });
+
+  els.fab.addEventListener('click', function () {
+    if (!state.categories.length) {
+      alert('请先创建一个分区');
+      openCatManage();
+      return;
+    }
+    openItemForm(null);
+  });
+
+  els.btnCats.addEventListener('click', openCatManage);
+
+  els.overlay.addEventListener('click', closeSheet);
+
+  els.sheetContent.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const act = btn.dataset.act;
+
+    if (act === 'pick-platform') {
+      const p = btn.dataset.p;
+      els.sheetContent.querySelectorAll('#platformChips .chip').forEach(function (c) {
+        c.classList.toggle('active', c === btn);
+      });
+      const wrap = els.sheetContent.querySelector('#customPlatformWrap');
+      if (wrap) {
+        wrap.hidden = (p !== '__custom');
+        if (p === '__custom') {
+          const inp = els.sheetContent.querySelector('#customPlatform');
+          if (inp) setTimeout(function () { inp.focus(); }, 60);
+        }
+      }
+      return;
+    }
+
+    if (act === 'copy-link') {
+      const item = state.items.find(function (i) { return i.id === ui.viewingItem; });
+      if (item) copyText(String(item.link || ''));
+      return;
+    }
+
+    if (act === 'edit-item') {
+      if (ui.viewingItem) openItemForm(ui.viewingItem);
+      return;
+    }
+
+    if (act === 'cancel-item-form') {
+      if (ui.editingItem) {
+        const id = ui.editingItem;
+        ui.editingItem = null;
+        openDetail(id);
+      } else {
+        closeSheet();
+      }
+      return;
+    }
+
+    if (act === 'del-item') {
+      if (!ui.viewingItem) return;
+      if (!confirm('确定删除这个商品及其所有价格记录吗？')) return;
+      state.items = state.items.filter(function (i) { return i.id !== ui.viewingItem; });
+      save();
+      closeSheet();
+      render();
+      return;
+    }
+
+    if (act === 'toggle-price-form') {
+      const form = els.sheetContent.querySelector('#priceForm');
+      if (!form) return;
+      form.hidden = !form.hidden;
+      if (!form.hidden) {
+        setTimeout(function () {
+          form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const inp = form.querySelector('input[name="price"]');
+          if (inp) inp.focus();
+        }, 140);
+      }
+      return;
+    }
+
+    if (act === 'close-price-form') {
+      const form = els.sheetContent.querySelector('#priceForm');
+      if (form) form.hidden = true;
+      return;
+    }
+
+    if (act === 'del-price') {
+      const pid = btn.dataset.pid;
+      const item = state.items.find(function (i) { return i.id === ui.viewingItem; });
+      if (!item) return;
+      if (!confirm('删除这条价格记录？')) return;
+      item.prices = item.prices.filter(function (p) { return p.id !== pid; });
+      item.updatedAt = Date.now();
+      save();
+      render();
+      openDetail(item.id);
+      return;
+    }
+
+    if (act === 'del-cat') {
+      const id = btn.dataset.id;
+      const count = state.items.filter(function (i) { return i.categoryId === id; }).length;
+      const msg = count
+        ? '该分区下有 ' + count + ' 个商品，删除后商品也会一并删除，确定吗？'
+        : '确定删除这个分区吗？';
+      if (!confirm(msg)) return;
+      state.categories = state.categories.filter(function (c) { return c.id !== id; });
+      state.items = state.items.filter(function (i) { return i.categoryId !== id; });
+      if (ui.activeCat === id) ui.activeCat = 'all';
+      save();
+      render();
+      openCatManage();
+      return;
+    }
+  });
+
+  els.sheetContent.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const form = e.target;
+
+    if (form.id === 'itemForm') {
+      const fd = new FormData(form);
+      const name = String(fd.get('name') || '').trim();
+      if (!name) return;
+
+      const categoryId = fd.get('categoryId');
+      if (!categoryId) { alert('请先选择或创建分区'); return; }
+
+      const activeChip = els.sheetContent.querySelector('#platformChips .chip.active');
+      let platform = activeChip ? activeChip.dataset.p : PRESET_PLATFORMS[0];
+      if (platform === '__custom') {
+        const ci = els.sheetContent.querySelector('#customPlatform');
+        platform = (ci ? ci.value : '').trim() || '其他';
+      }
+
+      const link = String(fd.get('link') || '').trim();
+      const note = String(fd.get('note') || '').trim();
+
+      if (ui.editingItem) {
+        const item = state.items.find(function (i) { return i.id === ui.editingItem; });
+        if (!item) return;
+        item.name = name;
+        item.categoryId = categoryId;
+        item.platform = platform;
+        item.link = link;
+        item.note = note;
+        item.updatedAt = Date.now();
+        save();
+        render();
+        ui.editingItem = null;
+        openDetail(item.id);
+      } else {
+        const newItem = {
+          id: uid('i'),
+          categoryId: categoryId,
+          name: name,
+          platform: platform,
+          link: link,
+          note: note,
+          prices: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        };
+        const rawPrice = fd.get('price');
+        if (rawPrice !== null && String(rawPrice).trim() !== '') {
+          const p = Number(rawPrice);
+          if (isFinite(p) && p >= 0) {
+            newItem.prices.push({
+              id: uid('p'),
+              price: p,
+              date: fd.get('date') || todayStr(),
+              note: '',
+              ts: Date.now()
+            });
+          }
+        }
+        state.items.unshift(newItem);
+        save();
+        if (ui.activeCat !== 'all') ui.activeCat = categoryId;
+        closeSheet();
+        render();
+      }
+      return;
+    }
+
+    if (form.id === 'priceForm') {
+      const item = state.items.find(function (i) { return i.id === ui.viewingItem; });
+      if (!item) return;
+      const fd = new FormData(form);
+      const price = Number(fd.get('price'));
+      if (!isFinite(price) || price < 0) { alert('请输入有效价格'); return; }
+      item.prices.push({
+        id: uid('p'),
+        price: price,
+        date: fd.get('date') || todayStr(),
+        note: String(fd.get('note') || '').trim(),
+        ts: Date.now()
+      });
+      item.updatedAt = Date.now();
+      save();
+      render();
+      openDetail(item.id);
+      return;
+    }
+
+    if (form.id === 'catForm') {
+      const fd = new FormData(form);
+      const name = String(fd.get('name') || '').trim();
+      if (!name) return;
+      if (state.categories.some(function (c) { return c.name === name; })) {
+        alert('已存在同名分区');
+        return;
+      }
+      state.categories.push({ id: uid('c'), name: name, createdAt: Date.now() });
+      save();
+      render();
+      openCatManage();
+      return;
+    }
+  });
+
+  els.sheetContent.addEventListener('change', function (e) {
+    const input = e.target.closest('.cat-input');
+    if (!input) return;
+    const row = input.closest('.cat-row');
+    if (!row) return;
+    const cat = state.categories.find(function (c) { return c.id === row.dataset.id; });
+    if (!cat) return;
+    const v = input.value.trim();
+    if (!v) { input.value = cat.name; return; }
+    if (v !== cat.name) {
+      cat.name = v;
+      save();
+      render();
+    }
+  });
+
+  document.addEventListener('focusin', function (e) {
+    const t = e.target;
+    if (t && t.tagName === 'INPUT' && t.type === 'date') {
+      t.style.fontSize = '16px';
+    }
+  });
+
+  state = load();
+  render();
+
+  /* ============================================================
+     PWA ①：动态生成 iOS 桌面图标（180×180 PNG）
+     iOS 对 SVG 的 apple-touch-icon 支持不稳，这里用 canvas 画一张 PNG
+     ============================================================ */
+  function buildAppleTouchIcon() {
+    try {
+      var S = 180;
+      var cv = document.createElement('canvas');
+      cv.width = S;
+      cv.height = S;
+      var x = cv.getContext('2d');
+      if (!x) return;
+
+      // 背景渐变
+      var g = x.createLinearGradient(0, 0, S, S);
+      g.addColorStop(0, '#45c084');
+      g.addColorStop(0.55, '#2f9e63');
+      g.addColorStop(1, '#1d7d4d');
+      x.fillStyle = g;
+      x.fillRect(0, 0, S, S);
+
+      // 切到 512 坐标系
+      var k = S / 512;
+      x.save();
+      x.scale(k, k);
+
+      // 提手
+      x.strokeStyle = '#ffffff';
+      x.lineWidth = 26;
+      x.lineCap = 'round';
+      x.lineJoin = 'round';
+      x.beginPath();
+      x.moveTo(186, 208);
+      x.lineTo(186, 168);
+      x.arc(256, 168, 70, Math.PI, 0, false);
+      x.lineTo(326, 208);
+      x.stroke();
+
+      // 袋身
+      x.fillStyle = '#ffffff';
+      x.beginPath();
+      if (typeof x.roundRect === 'function') {
+        x.roundRect(136, 204, 240, 196, 36);
+      } else {
+        var r = 36, X = 136, Y = 204, W = 240, H = 196;
+        x.moveTo(X + r, Y);
+        x.arcTo(X + W, Y, X + W, Y + H, r);
+        x.arcTo(X + W, Y + H, X, Y + H, r);
+        x.arcTo(X, Y + H, X, Y, r);
+        x.arcTo(X, Y, X + W, Y, r);
+        x.closePath();
+      }
+      x.fill();
+
+      // 价格下降折线
+      x.strokeStyle = '#2f9e63';
+      x.lineWidth = 22;
+      x.beginPath();
+      x.moveTo(190, 270);
+      x.lineTo(238, 308);
+      x.lineTo(272, 282);
+      x.lineTo(320, 328);
+      x.stroke();
+
+      // 末端圆点
+      x.fillStyle = '#2f9e63';
+      x.beginPath();
+      x.arc(320, 328, 15, 0, Math.PI * 2);
+      x.fill();
+
+      x.restore();
+
+      // 写回 <link rel="apple-touch-icon">
+      var dataUrl = cv.toDataURL('image/png');
+      var link = document.querySelector('link[rel="apple-touch-icon"]');
+      if (link) link.setAttribute('href', dataUrl);
+    } catch (e) { /* 失败则保留 SVG 兜底 */ }
+  }
+  buildAppleTouchIcon();
+
+  /* ============================================================
+     PWA ②：注册 Service Worker + 自动更新
+     ============================================================ */
+  if ('serviceWorker' in navigator) {
+    var refreshing = false;
+    var hadController = !!navigator.serviceWorker.controller;
+
+    // 新 SW 接管时自动刷新（首次安装不刷新，避免闪一下）
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadController) { hadController = true; return; }
+      if (refreshing) return;
+      refreshing = true;
+      location.reload();
+    });
+
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./service-worker.js').then(function (reg) {
+        // 启动时主动查一次
+        try { reg.update(); } catch (e) {}
+
+        // 每次回到前台再查一次（PWA 常驻后台时很关键）
+        document.addEventListener('visibilitychange', function () {
+          if (!document.hidden) {
+            try { reg.update(); } catch (e) {}
+          }
+        });
+      }).catch(function () {
+        /* 注册失败（如非 HTTPS）静默忽略 */
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>
