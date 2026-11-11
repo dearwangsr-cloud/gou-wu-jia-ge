@@ -76,7 +76,7 @@
   .tab.active{background:var(--text);color:#fff;border-color:var(--text)}
   .tab-add{color:var(--primary);border-style:dashed}
 
-  .content{padding:14px 16px calc(110px + var(--safe-bottom))}
+  .content{padding:14px 16px calc(178px + var(--safe-bottom))}
   .item-card{
     background:var(--card-bg,#fff);
     border-radius:var(--radius);
@@ -123,7 +123,7 @@
   .empty-sub{font-size:13px;margin:0}
 
   .fab{
-    position:fixed;right:18px;bottom:calc(20px + var(--safe-bottom));
+    position:fixed;right:18px;bottom:calc(88px + var(--safe-bottom));
     width:56px;height:56px;border-radius:50%;border:none;
     background:var(--primary);color:#fff;
     font-size:30px;font-weight:300;line-height:1;
@@ -347,7 +347,7 @@
     if (!el) {
       el = document.createElement('div');
       el.id = 'toastEl';
-      el.style.cssText = 'position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(6px);background:rgba(22,33,27,.92);color:#fff;font-size:13px;font-weight:500;padding:8px 16px;border-radius:10px;z-index:200;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;';
+      el.style.cssText = 'position:fixed;left:50%;bottom:calc(158px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(6px);background:rgba(22,33,27,.92);color:#fff;font-size:13px;font-weight:500;padding:8px 16px;border-radius:10px;z-index:200;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;';
       document.body.appendChild(el);
     }
     el.textContent = msg;
